@@ -174,8 +174,12 @@ int main(int argc, char* argv[]) {
 		out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
 		out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
 
-		estimations.push_back(ukf.x_);
-		ground_truth.push_back(gt_pack_list[k].gt_values_);
+		VectorXd estimation_item(2);
+		estimation_item << ukf.x_(0), ukf.x_(1);
+		VectorXd ground_truth_item(2);
+		ground_truth_item << gt_pack_list[k].gt_values_(0), gt_pack_list[k].gt_values_(1);
+		estimations.push_back(estimation_item);
+		ground_truth.push_back(ground_truth_item);
 	}
 	// compute the accuracy (RMSE)
 	Tools tools;
