@@ -125,7 +125,7 @@ bool UKF::FindFirstMeasurement(const MeasurementPackage &measurement_pack) {
  * @param {MeasurementPackage} meas_package The latest measurement data of
  * either radar or laser.
  */
-void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
+void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 	/**
   TODO:
 
@@ -134,17 +134,25 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	 */
 	if(!is_initialized_){
 
-		if(FindFirstMeasurement(meas_package)){
+		if(FindFirstMeasurement(measurement_pack)){
 			is_initialized_ = true;
 		}
 		return;
 	}
 	//compute the time elapsed between the current and previous measurements
-	double delta_t = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
-	previous_timestamp_ = meas_package.timestamp_;
+	double delta_t = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
+	previous_timestamp_ = measurement_pack.timestamp_;
 
 	//perform prediction step
 	Prediction(delta_t);
+
+	//perform update step
+	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+
+	}else{
+		UpdateLidar(measurement_pack);
+
+	}
 }
 
 /**
@@ -170,15 +178,34 @@ void UKF::Prediction(double delta_t) {
  * Updates the state and the state covariance matrix using a laser measurement.
  * @param {MeasurementPackage} meas_package
  */
-void UKF::UpdateLidar(MeasurementPackage meas_package) {
+void UKF::UpdateLidar(const MeasurementPackage &meas_package) {
 	/**
-  TODO:
 
   Complete this function! Use lidar data to update the belief about the object's
   position. Modify the state vector, x_, and covariance, P_.
 
-  You'll also need to calculate the lidar NIS.
+  Also need to calculate the lidar NIS.
 	 */
+	const VectorXd &z = meas_package.raw_measurements_;
+	MatrixXd R(2, 2);
+	R << std_laspx_*std_laspx_, 0,
+			0, std_laspy_ * std_laspy_;
+
+
+	MatrixXd H(2, 5);
+	VectorXd z_pred = H * x_;
+	VectorXd y = z - z_pred;
+	MatrixXd Ht = H.transpose();
+	MatrixXd S = H * P_ * Ht + R;
+	MatrixXd Si = S.inverse();
+	MatrixXd PHt = P_ * Ht;
+	MatrixXd K = PHt * Si;
+
+	//new estimate
+	x_ = x_ + (K * y);
+	long x_size = x_.size();
+	MatrixXd I = MatrixXd::Identity(x_size, x_size);
+	P_ = (I - K * H) * P_;
 }
 
 /**
