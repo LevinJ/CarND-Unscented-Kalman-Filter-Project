@@ -10,7 +10,7 @@ UKF::UKF() {
 	use_laser_ = true;
 
 	// if this is false, radar measurements will be ignored (except during init)
-	use_radar_ = true;
+	use_radar_ = false;
 
 	// initial state vector
 	x_ = VectorXd(5);
@@ -19,10 +19,10 @@ UKF::UKF() {
 	P_ = MatrixXd(5, 5);
 
 	// Process noise standard deviation longitudinal acceleration in m/s^2
-	std_a_ = 30;
+	std_a_ = 0.2;
 
 	// Process noise standard deviation yaw acceleration in rad/s^2
-	std_yawdd_ = 30;
+	std_yawdd_ = 0.2;
 
 	// Laser measurement noise standard deviation position1 in m
 	std_laspx_ = 0.15;
@@ -52,6 +52,7 @@ UKF::UKF() {
 	n_aug_ = 7;
 	//define spreading parameter
 	double lambda = 3 - n_aug_;
+	previous_timestamp_ = 0;
 }
 
 UKF::~UKF() {}
@@ -193,6 +194,8 @@ void UKF::UpdateLidar(const MeasurementPackage &meas_package) {
 
 
 	MatrixXd H(2, 5);
+	H<< 1, 0, 0, 0,0,
+					0, 1, 0, 0,0;
 	VectorXd z_pred = H * x_;
 	VectorXd y = z - z_pred;
 	MatrixXd Ht = H.transpose();
@@ -321,10 +324,6 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred) {
 	//create covariance matrix for prediction
 	MatrixXd P = MatrixXd(n_x_, n_x_);
 
-
-	/*******************************************************************************
-	 * Student part begin
-	 ******************************************************************************/
 
 	// set weights
 	double weight_0 = lambda_/(lambda_+n_aug_);
