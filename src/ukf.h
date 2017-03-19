@@ -73,6 +73,9 @@ public:
 	///* the current NIS for laser
 	double NIS_laser_;
 
+	//set measurement dimension, radar can measure r, phi, and r_dot
+	int n_z_;
+
 	/**
 	 * Constructor
 	 */
@@ -100,7 +103,7 @@ public:
 	 * matrix
 	 * @param delta_t Time between k and k+1 in s
 	 */
-	void Prediction(double delta_t);
+	void Prediction(MatrixXd &Xsig_pred, double delta_t);
 
 	/**
 	 * Updates the state and the state covariance matrix using a laser measurement
@@ -112,11 +115,13 @@ public:
 	 * Updates the state and the state covariance matrix using a radar measurement
 	 * @param meas_package The measurement at k+1
 	 */
-	void UpdateRadar(MeasurementPackage meas_package);
+	void UpdateRadar(const MeasurementPackage &meas_package, const MatrixXd &Xsig_pred);
 private:
 	void AugmentedSigmaPoints(MatrixXd &Xsig_aug);
 	void SigmaPointPrediction(MatrixXd &Xsig_pred, double delta_t, const MatrixXd &Xsig_aug);
 	void PredictMeanAndCovariance(const MatrixXd &Xsig_pred);
+	void PredictRadarMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, const MatrixXd &Xsig_pred);
+	void UpdateRadarState(const MeasurementPackage &meas_package, const MatrixXd &Xsig_pred, const MatrixXd &Zsig, const VectorXd &z_pred, const MatrixXd &S);
 };
 
 #endif /* UKF_H */
