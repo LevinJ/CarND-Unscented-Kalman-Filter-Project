@@ -158,6 +158,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 		UpdateLidar(measurement_pack);
 
 	}
+	std::cout << "After update x_ = " << std::endl << x_ << std::endl;
+	std::cout << "After update P_ = " << std::endl << P_ << std::endl;
 }
 
 /**
@@ -169,12 +171,16 @@ void UKF::Prediction(MatrixXd &Xsig_pred, double delta_t) {
 	//create sigma point matrix
 	MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
 	AugmentedSigmaPoints(Xsig_aug);
+	std::cout << "Xsig_aug = " << std::endl << Xsig_aug << std::endl;
 
 	//create matrix with predicted sigma points as columns
 	SigmaPointPrediction(Xsig_pred, delta_t, Xsig_aug);
+	std::cout << "Xsig_pred = " << std::endl << Xsig_pred << std::endl;
 
 	//compute x_ and P_ for the prediction step
 	PredictMeanAndCovariance(Xsig_pred);
+	std::cout << "x_ = " << std::endl << x_ << std::endl;
+	std::cout << "P_ = " << std::endl << P_ << std::endl;
 
 }
 
@@ -212,6 +218,9 @@ void UKF::UpdateLidar(const MeasurementPackage &meas_package) {
 	long x_size = x_.size();
 	MatrixXd I = MatrixXd::Identity(x_size, x_size);
 	P_ = (I - K * H) * P_;
+
+	NormalizeAngle(x_(3));
+	NormalizeAngle(x_(4));
 }
 
 /**
@@ -309,6 +318,8 @@ void UKF::SigmaPointPrediction(MatrixXd &Xsig_pred, double delta_t, const Matrix
 
 		yaw_p = yaw_p + 0.5*nu_yawdd*delta_t*delta_t;
 		yawd_p = yawd_p + nu_yawdd*delta_t;
+		NormalizeAngle(yaw_p);
+		NormalizeAngle(yawd_p);
 
 		//write predicted sigma point into right column
 		Xsig_pred(0,i) = px_p;
@@ -364,8 +375,19 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred) {
 	//write result
 	x_ = x;
 	P_ = P;
+	NormalizeAngle(x_(3));
+	NormalizeAngle(x_(4));
 }
 
+void UKF::NormalizeAngle(double &angle) {
+	while (angle> M_PI) {
+		angle-=2.*M_PI;
+	}
+	while (angle<-M_PI) {
+		angle+=2.*M_PI;
+	}
+
+}
 void UKF::PredictRadarMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, const MatrixXd &Xsig_pred) {
 
   //set vector for weights

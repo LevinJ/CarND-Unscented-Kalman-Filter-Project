@@ -122,6 +122,7 @@ private:
 	void PredictMeanAndCovariance(const MatrixXd &Xsig_pred);
 	void PredictRadarMeasurement(VectorXd &z_pred, MatrixXd &S, MatrixXd &Zsig, const MatrixXd &Xsig_pred);
 	void UpdateRadarState(const MeasurementPackage &meas_package, const MatrixXd &Xsig_pred, const MatrixXd &Zsig, const VectorXd &z_pred, const MatrixXd &S);
+	void NormalizeAngle(double &angle);
 };
 
 #endif /* UKF_H */

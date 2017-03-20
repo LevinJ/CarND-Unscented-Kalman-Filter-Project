@@ -140,9 +140,8 @@ int main(int argc, char* argv[]) {
 	// start filtering from the second frame (the speed is unknown in the first
 	// frame)
 	for (size_t k = 0; k < number_of_measurements; ++k) {
-		static int count = 1;
-		cout << "measurement NO " << count << endl;
-		count++;
+		cout << "#######NO " << k+1 <<" #######" <<endl;
+
 		//check if we are use this measurement
 		if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
 			if(!ukf.use_laser_){
