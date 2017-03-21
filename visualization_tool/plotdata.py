@@ -20,7 +20,7 @@ class PlotData(object):
         
         entries = []
         cols = ['type_meas', 'px_meas','py_meas','timestampe','delta_time','px_gt','py_gt','vx_gt','vy_gt',
-                'rho_meas','phi_meas','rho_dot_meas', 'rho_gt','phi_gt','rho_dot_gt','vel_abs','yaw_angle']
+                'rho_meas','phi_meas','rho_dot_meas', 'rho_gt','phi_gt','rho_dot_gt','vel_abs','yaw_angle','vx_meas','vy_meas']
         with open(kalman_input_file, "r") as ins:
             for line in ins:
                 entries.append(self.__process_line(line))
@@ -83,9 +83,18 @@ class PlotData(object):
     def __cal_rmse(self, df):
         px_rmse = math.sqrt(((df['px_meas'] - df['px_gt']).values ** 2).mean())
         py_rmse = math.sqrt(((df['py_meas'] - df['py_gt']).values ** 2).mean())
+        
+        sub_df = df[(df['vx_meas'] !=0) & (df['vy_meas'] !=0) ]
+        
+        if sub_df.shape[0] !=0:
+            vx_rmse = math.sqrt(((sub_df['vx_meas'] - sub_df['vx_gt']).values ** 2).mean())
+            vy_rmse = math.sqrt(((sub_df['vy_meas'] - sub_df['vy_gt']).values ** 2).mean())
+        else:
+            vx_rmse = 0
+            vy_rmse = 0
     
         
-        return px_rmse,py_rmse
+        return px_rmse,py_rmse,vx_rmse,vy_rmse
     def __process_line(self, line):
         px_meas = 0
         py_meas = 0
@@ -93,6 +102,9 @@ class PlotData(object):
         rho_meas = 0
         phi_meas = 0
         rho_dot_meas = 0
+        
+        vx_meas = 0
+        vy_meas = 0
        
         timestampe = 0
         px_gt = 0
@@ -130,6 +142,9 @@ class PlotData(object):
             px_meas = rho_meas * math.cos(phi_meas)
             py_meas = rho_meas * math.sin(phi_meas)
             
+            vx_meas = rho_dot_meas * math.cos(phi_meas)
+            vy_meas = rho_dot_meas * math.sin(phi_meas)
+            
             
             rho_gt = math.sqrt(px_gt ** 2 + py_gt ** 2)
             if px_gt != 0:
@@ -160,7 +175,7 @@ class PlotData(object):
         
         
         return type_meas, px_meas,py_meas,timestampe,delta_time, px_gt,py_gt,vx_gt,vy_gt,\
-            rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,vel_abs,  yaw_angle
+            rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,vel_abs,  yaw_angle,vx_meas,vy_meas
         
     
    
