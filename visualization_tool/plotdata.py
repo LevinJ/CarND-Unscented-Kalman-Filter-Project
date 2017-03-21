@@ -19,7 +19,7 @@ class PlotData(object):
         self.previous_timestamp = None   
         
         entries = []
-        cols = ['type_meas', 'px_meas','py_meas','vx_meas','vy_meas','timestampe','delta_time','px_gt','py_gt','vx_gt','vy_gt',
+        cols = ['type_meas', 'px_meas','py_meas','timestampe','delta_time','px_gt','py_gt','vx_gt','vy_gt',
                 'rho_meas','phi_meas','rho_dot_meas', 'rho_gt','phi_gt','rho_dot_gt','vel_abs','yaw_angle']
         with open(kalman_input_file, "r") as ins:
             for line in ins:
@@ -34,18 +34,15 @@ class PlotData(object):
         print('radar only: {}'.format(self.__cal_rmse(radar_df)))
         print('all data: {}'.format(self.__cal_rmse(df)))
         
-        print("lidar measurement noise {}, {}".format(np.var(lidar_df['px_meas'] - lidar_df['px_gt']), np.var(lidar_df['py_meas'] - lidar_df['py_gt'])))
-        print("radar measurement noise {}, {}, {}".format(np.var(radar_df['rho_meas'] - radar_df['rho_gt']), np.var(radar_df['phi_meas'] - radar_df['phi_gt']),
-                                                 np.var(radar_df['rho_dot_meas'] - radar_df['rho_dot_gt'])))
-#         print("motion noise {}, {}".format(np.max(df[df['vel_acc']!=0]['vel_acc'])/2.0, np.max(df[df['yaw_acc']!=0]['yaw_acc'])/2.0))
-        df = self.__add_first_derivative(df)
-        df = self.__add_second_derivative(df)
-        print("motion noise {}, {}".format(np.max(df['vel_acc'])/2.0, np.max(df['yaw_acc'])/2.0))
+#         print("lidar measurement noise {}, {}".format(np.var(lidar_df['px_meas'] - lidar_df['px_gt']), np.var(lidar_df['py_meas'] - lidar_df['py_gt'])))
+#         print("radar measurement noise {}, {}, {}".format(np.var(radar_df['rho_meas'] - radar_df['rho_gt']), np.var(radar_df['phi_meas'] - radar_df['phi_gt']),
+#                                                  np.var(radar_df['rho_dot_meas'] - radar_df['rho_dot_gt'])))
+
+#         df = self.__add_first_derivative(df)
+#         df = self.__add_second_derivative(df)
+#         print("motion noise {}, {}".format(np.max(df['vel_acc'])/2.0, np.max(df['yaw_acc'])/2.0))
         
-        df.to_csv(self.csv_file_name)
-        print(self.csv_file_name + ' saved')
-        
-        return
+        return df
     def __add_second_derivative(self, df):
         yaw_acc_vec = []
         for i in range(df.shape[0]):
@@ -86,16 +83,17 @@ class PlotData(object):
     def __cal_rmse(self, df):
         px_rmse = math.sqrt(((df['px_meas'] - df['px_gt']).values ** 2).mean())
         py_rmse = math.sqrt(((df['py_meas'] - df['py_gt']).values ** 2).mean())
-        vx_rmse = math.sqrt(((df['vx_meas'] - df['vx_gt']).values ** 2).mean())
-        vy_rmse = math.sqrt(((df['vy_meas'] - df['vy_gt']).values ** 2).mean())
+    
         
-        
-        return px_rmse,py_rmse,vx_rmse,vy_rmse
+        return px_rmse,py_rmse
     def __process_line(self, line):
         px_meas = 0
         py_meas = 0
-        vx_meas = 0
-        vy_meas = 0
+        
+        rho_meas = 0
+        phi_meas = 0
+        rho_dot_meas = 0
+       
         timestampe = 0
         px_gt = 0
         py_gt = 0
@@ -105,9 +103,9 @@ class PlotData(object):
         rho_gt =0
         phi_gt = 0
         rho_dot_gt = 0
-        rho_meas = 0
-        phi_meas = 0
-        rho_dot_meas = 0
+        
+        
+        
         
         if 'L'in line:
             type_meas,px_meas,py_meas, timestampe,px_gt,py_gt,vx_gt,vy_gt=line[:-1].split("\t")
@@ -131,8 +129,7 @@ class PlotData(object):
             
             px_meas = rho_meas * math.cos(phi_meas)
             py_meas = rho_meas * math.sin(phi_meas)
-            vx_meas = rho_dot_meas * math.cos(phi_meas)
-            vy_meas = rho_dot_meas * math.sin(phi_meas)
+            
             
             rho_gt = math.sqrt(px_gt ** 2 + py_gt ** 2)
             if px_gt != 0:
@@ -158,10 +155,11 @@ class PlotData(object):
         yaw_angle = 0
         
         vel_abs = math.sqrt(vx_gt*vx_gt+ vy_gt*vy_gt)   
-        if vx_gt != 0:
-            yaw_angle = math.atan2(vy_gt, vx_gt)
+      
+        yaw_angle = math.atan2(vy_gt, vx_gt)
         
-        return type_meas, px_meas,py_meas,vx_meas,vy_meas,timestampe,delta_time, px_gt,py_gt,vx_gt,vy_gt,\
+        
+        return type_meas, px_meas,py_meas,timestampe,delta_time, px_gt,py_gt,vx_gt,vy_gt,\
             rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,vel_abs,  yaw_angle
         
     
@@ -174,7 +172,9 @@ class PlotData(object):
         print('####data sample 1###')
         kalman_input_file = r'../data/sample-laser-radar-measurement-data-1.txt'
         df = self.__load_input_data(kalman_input_file)
-        self.__cal_input_rmse(df)
+        df = self.__cal_input_rmse(df)
+        df.to_csv(self.csv_file_name)
+        print(self.csv_file_name + ' saved')
         return df
     def run_data_2(self):
         print('####data sample 2###')
