@@ -10,7 +10,7 @@ UKF::UKF() {
 	use_laser_ = true;
 
 	// if this is false, radar measurements will be ignored (except during init)
-	use_radar_ = false;
+	use_radar_ = true;
 
 	// initial state vector
 	x_ = VectorXd(5);
@@ -460,9 +460,10 @@ double UKF::ComputeNIS(const VectorXd &z_pred, const MatrixXd &S, const VectorXd
 	double nis = 0;
 	VectorXd y = z - z_pred;
 	MatrixXd Si = S.inverse();
+	int mea_size = z.size();
 
-	Eigen::Map<MatrixXd> yt_matrix(y.data(), 1,2);
-	Eigen::Map<MatrixXd> y_matrix(y.data(), 2,1);
+	Eigen::Map<MatrixXd> yt_matrix(y.data(), 1,mea_size);
+	Eigen::Map<MatrixXd> y_matrix(y.data(), mea_size,1);
 
 	MatrixXd temp = yt_matrix * Si * y_matrix;
 	nis = temp(0,0);
