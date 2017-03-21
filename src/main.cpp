@@ -173,12 +173,17 @@ int main(int argc, char* argv[]) {
 
 			// p2 - meas
 			out_file_ << measurement_pack_list[k].raw_measurements_(1) << "\t";
+
+			//NIS
+			out_file_ << ukf.NIS_laser_ << "\t";
 		} else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
 			// output the estimation in the cartesian coordinates
 			float ro = measurement_pack_list[k].raw_measurements_(0);
 			float phi = measurement_pack_list[k].raw_measurements_(1);
 			out_file_ << ro * cos(phi) << "\t"; // p1_meas
 			out_file_ << ro * sin(phi) << "\t"; // p2_meas
+			//NIS
+			out_file_ << ukf.NIS_radar_ << "\t";
 		}
 
 		//		out_file_ << "\n";
