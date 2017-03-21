@@ -6,7 +6,7 @@ import math
 # py.init_notebook_mode()
 kalman_output_file = r'../data/sample-laser-radar-measurement-data-1_output.txt'
 
-my_cols=['px_est','py_est','vel_abs','yaw_angle','yaw_rate','px_meas','py_meas','px_gt','py_gt','vx_gt','vy_gt']
+my_cols=['px_est','py_est','vel_abs','yaw_angle','yaw_rate','vx_est','vy_est','px_meas','py_meas','nis','px_gt','py_gt','vx_gt','vy_gt']
 with open(kalman_output_file) as f:
     table_ekf_output = pd.read_table(f, sep='\t', header=None, names=my_cols, lineterminator='\n')
     

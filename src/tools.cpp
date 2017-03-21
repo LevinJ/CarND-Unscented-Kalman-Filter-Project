@@ -13,8 +13,10 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 	 * Calculate the RMSE here.
 	 */
 
-	VectorXd rmse(2);
-	rmse << 0,0;
+	int element_size = ground_truth[0].size();
+
+	VectorXd rmse(element_size);
+	rmse.fill(0.0);
 
 	// check the validity of the following inputs:
 	//  * the estimation vector size should not be zero

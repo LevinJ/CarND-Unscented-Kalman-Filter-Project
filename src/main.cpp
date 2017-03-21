@@ -164,6 +164,16 @@ int main(int argc, char* argv[]) {
 		out_file_ << ukf.x_(3) << "\t"; // yaw_angle -est
 		out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
 
+		//output indirect vx,xy estimation
+		double v  = ukf.x_(2);
+		double yaw_angle = ukf.x_(3);
+
+		double vx = cos(yaw_angle)*v;
+		double vy = sin(yaw_angle)*v;
+
+		out_file_ << ukf.x_(3) << "\t"; // yaw_angle -est
+		out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
+
 		// output the measurements
 		if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
 			// output the estimation
@@ -193,10 +203,11 @@ int main(int argc, char* argv[]) {
 		out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
 		out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
 
-		VectorXd estimation_item(2);
-		estimation_item << ukf.x_(0), ukf.x_(1);
-		VectorXd ground_truth_item(2);
-		ground_truth_item << gt_pack_list[k].gt_values_(0), gt_pack_list[k].gt_values_(1);
+		VectorXd estimation_item(4);
+		estimation_item << ukf.x_(0), ukf.x_(1), vx, vy;
+		VectorXd ground_truth_item(4);
+//		ground_truth_item << gt_pack_list[k].gt_values_(0), gt_pack_list[k].gt_values_(1);
+		ground_truth_item << gt_pack_list[k].gt_values_;
 		estimations.push_back(estimation_item);
 		ground_truth.push_back(ground_truth_item);
 	}
