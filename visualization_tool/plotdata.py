@@ -163,9 +163,13 @@ class PlotData(object):
             rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,vel_abs,  yaw_angle
         
     
-    def visulize_data(self,df):
-        plt.scatter(df['px_gt'], df['py_gt'],marker='*', color='blue')
-        plt.scatter(df['px_meas'], df['py_meas'],marker='v',color='red')
+   
+    def disp_input(self,df):
+        colors = ['b', 'c', 'y', 'm', 'r']
+        gt = plt.plot(df['px_gt'], df['py_gt'],marker='*', color= colors[0])
+        meas = plt.scatter(df['px_meas'], df['py_meas'],marker='v',color=colors[4])
+        plt.legend((gt, meas),
+           ('ground truth', 'measurement'))
         plt.show()
         return
     def run_data_1(self):
@@ -173,6 +177,7 @@ class PlotData(object):
         kalman_input_file = r'../data/sample-laser-radar-measurement-data-1.txt'
         df = self.__load_input_data(kalman_input_file)
         df = self.__cal_input_rmse(df)
+        self.disp_input(df)
         df.to_csv(self.csv_file_name)
         print(self.csv_file_name + ' saved')
         return df
@@ -188,8 +193,7 @@ class PlotData(object):
     def run(self):
         self.run_data_1()
 #         self.run_data_2()
-        
-#         self.visulize_data(df)
+    
 
         return
 
