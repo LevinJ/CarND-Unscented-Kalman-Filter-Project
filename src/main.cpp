@@ -154,6 +154,14 @@ int main(int argc, char* argv[]) {
 			}
 
 		}
+
+		if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
+			out_file_ << "L" << "\t"; // sensor type
+
+		}else{
+			out_file_ << "R" << "\t"; // sensor type
+
+		}
 		// Call the UKF-based fusion
 		ukf.ProcessMeasurement(measurement_pack_list[k]);
 
