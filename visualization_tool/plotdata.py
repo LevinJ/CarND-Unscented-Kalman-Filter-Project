@@ -16,20 +16,16 @@ class PlotData(object):
     def __load_input_data(self,kalman_input_file):
         
         print('processing {}.....'.format(kalman_input_file))
-        self.previous_timestamp = None
-        self.previous_vx = None
-        self.previous_vy = None
+        self.previous_timestamp = None   
         
         entries = []
         cols = ['type_meas', 'px_meas','py_meas','vx_meas','vy_meas','timestampe','delta_time','px_gt','py_gt','vx_gt','vy_gt',
-                'rho_meas','phi_meas','rho_dot_meas', 'rho_gt','phi_gt','rho_dot_gt','ax','ay']
+                'rho_meas','phi_meas','rho_dot_meas', 'rho_gt','phi_gt','rho_dot_gt','vel_abs','yaw_angle']
         with open(kalman_input_file, "r") as ins:
             for line in ins:
                 entries.append(self.__process_line(line))
         df = pd.DataFrame(entries, columns=cols)
-        csv_file_name = os.path.dirname(kalman_input_file) + '/preprocess/' + os.path.basename(kalman_input_file)[:-4] +'.csv'
-        df.to_csv(csv_file_name)
-        print(csv_file_name + ' saved')
+        self.csv_file_name = os.path.dirname(kalman_input_file) + '/preprocess/' + os.path.basename(kalman_input_file)[:-4] +'.csv'
         return df
     def __cal_input_rmse(self,df):
         lidar_df = df[df['type_meas'] == 'L']
@@ -41,9 +37,52 @@ class PlotData(object):
         print("lidar measurement noise {}, {}".format(np.var(lidar_df['px_meas'] - lidar_df['px_gt']), np.var(lidar_df['py_meas'] - lidar_df['py_gt'])))
         print("radar measurement noise {}, {}, {}".format(np.var(radar_df['rho_meas'] - radar_df['rho_gt']), np.var(radar_df['phi_meas'] - radar_df['phi_gt']),
                                                  np.var(radar_df['rho_dot_meas'] - radar_df['rho_dot_gt'])))
-        print("motion noise {}, {}".format(np.var(df[df['ax']!=0]['ax']), np.var(df[df['ay']!=0]['ay'])))
+#         print("motion noise {}, {}".format(np.max(df[df['vel_acc']!=0]['vel_acc'])/2.0, np.max(df[df['yaw_acc']!=0]['yaw_acc'])/2.0))
+        df = self.__add_first_derivative(df)
+        df = self.__add_second_derivative(df)
+        print("motion noise {}, {}".format(np.max(df['vel_acc'])/2.0, np.max(df['yaw_acc'])/2.0))
+        
+        df.to_csv(self.csv_file_name)
+        print(self.csv_file_name + ' saved')
         
         return
+    def __add_second_derivative(self, df):
+        yaw_acc_vec = []
+        for i in range(df.shape[0]):
+            if i == 0:
+                yaw_acc_vec.append(0)
+                continue
+            delta_time = df.iloc[i]['delta_time']
+            if  delta_time== 0:
+                yaw_acc_vec.append(yaw_acc_vec[-1])
+                continue
+            yaw_acc = (df.iloc[i]['yaw_rate'] - df.iloc[i-1]['yaw_rate'])/delta_time
+            yaw_acc_vec.append(yaw_acc)
+            
+        df['yaw_acc'] = yaw_acc_vec
+                           
+        return df
+    def __add_first_derivative(self, df):
+        vel_acc_vec = []
+        yaw_rate_vec = []
+        for i in range(df.shape[0]):
+            if i == 0:
+                vel_acc_vec.append(0)
+                yaw_rate_vec.append(0)
+                continue
+            delta_time = df.iloc[i]['delta_time']
+            if  delta_time== 0:
+                vel_acc_vec.append(vel_acc_vec[-1])
+                yaw_rate_vec.append(yaw_rate_vec[-1])
+                continue
+            vel_acc = (df.iloc[i]['vel_abs'] - df.iloc[i-1]['vel_abs'] )/delta_time
+            vel_acc_vec.append(vel_acc)
+            yaw_rate = (df.iloc[i]['yaw_angle'] - df.iloc[i-1]['yaw_angle'])/delta_time
+            yaw_rate_vec.append(yaw_rate)
+        df['vel_acc'] = vel_acc_vec
+        df['yaw_rate'] = yaw_rate_vec
+        
+        return df
     def __cal_rmse(self, df):
         px_rmse = math.sqrt(((df['px_meas'] - df['px_gt']).values ** 2).mean())
         py_rmse = math.sqrt(((df['py_meas'] - df['py_gt']).values ** 2).mean())
@@ -109,25 +148,23 @@ class PlotData(object):
             raise("unexpected line" + line)
         
         delta_time = 0
-        ax = 0
-        ay = 0
+        
         if self.previous_timestamp is not None:
             delta_time = (timestampe - self.previous_timestamp)/1000000.0
         
-        if delta_time != 0:    
-            if self.previous_vx is not None:
-                ax = (vx_gt - self.previous_vx)/ delta_time
-            if self.previous_vy is not None:
-                ay = (vy_gt - self.previous_vy)/ delta_time
-            
-        
         self.previous_timestamp = timestampe
-        self.previous_vx = vx_gt
-        self.previous_vy = vy_gt
-            
+        
+        vel_abs = 0
+        yaw_angle = 0
+        
+        vel_abs = math.sqrt(vx_gt*vx_gt+ vy_gt*vy_gt)   
+        if vx_gt != 0:
+            yaw_angle = math.atan2(vy_gt, vx_gt)
         
         return type_meas, px_meas,py_meas,vx_meas,vy_meas,timestampe,delta_time, px_gt,py_gt,vx_gt,vy_gt,\
-            rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,ax,ay
+            rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,vel_abs,  yaw_angle
+        
+    
     def visulize_data(self,df):
         plt.scatter(df['px_gt'], df['py_gt'],marker='*', color='blue')
         plt.scatter(df['px_meas'], df['py_meas'],marker='v',color='red')
@@ -150,7 +187,7 @@ class PlotData(object):
         
     def run(self):
         self.run_data_1()
-        self.run_data_2()
+#         self.run_data_2()
         
 #         self.visulize_data(df)
 
