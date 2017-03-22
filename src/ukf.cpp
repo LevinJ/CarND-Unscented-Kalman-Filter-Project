@@ -5,12 +5,12 @@
 /**
  * Initializes Unscented Kalman filter
  */
-UKF::UKF() {
+UKF::UKF(bool use_laser, bool use_radar) {
 	// if this is false, laser measurements will be ignored (except during init)
-	use_laser_ = true;
+	use_laser_ = use_laser;
 
 	// if this is false, radar measurements will be ignored (except during init)
-	use_radar_ = true;
+	use_radar_ = use_radar;
 
 	// initial state vector
 	x_ = VectorXd(5);

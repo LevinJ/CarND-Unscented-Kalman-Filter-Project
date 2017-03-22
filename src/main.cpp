@@ -27,9 +27,9 @@ void check_arguments(int argc, char* argv[]) {
 		cerr << usage_instructions << endl;
 	} else if (argc == 2) {
 		cerr << "Please include an output file.\n" << usage_instructions << endl;
-	} else if (argc == 3) {
+	} else if (argc == 3 || argc == 4) {
 		has_valid_args = true;
-	} else if (argc > 3) {
+	} else if (argc > 4) {
 		cerr << "Too many arguments.\n" << usage_instructions << endl;
 	}
 
@@ -130,7 +130,27 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Create a UKF instance
-	UKF ukf;
+	bool use_laser = false;
+	bool use_radar = false;
+
+	if (argc == 4){
+		string data_option = argv[3];
+
+		cout << "data option" << data_option << endl;
+		std::size_t found = data_option.find("L");
+		if (found!=std::string::npos){
+			use_laser = true;
+		}
+		found = data_option.find("R");
+		if (found!=std::string::npos){
+			use_radar = true;
+		}
+	}else{
+		use_laser = true;
+		use_radar = true;
+	}
+
+	UKF ukf(use_laser, use_radar);
 	// used to compute the RMSE later
 	vector<VectorXd> estimations;
 	vector<VectorXd> ground_truth;
@@ -214,7 +234,7 @@ int main(int argc, char* argv[]) {
 		VectorXd estimation_item(4);
 		estimation_item << ukf.x_(0), ukf.x_(1), vx, vy;
 		VectorXd ground_truth_item(4);
-//		ground_truth_item << gt_pack_list[k].gt_values_(0), gt_pack_list[k].gt_values_(1);
+		//		ground_truth_item << gt_pack_list[k].gt_values_(0), gt_pack_list[k].gt_values_(1);
 		ground_truth_item << gt_pack_list[k].gt_values_;
 		estimations.push_back(estimation_item);
 		ground_truth.push_back(ground_truth_item);

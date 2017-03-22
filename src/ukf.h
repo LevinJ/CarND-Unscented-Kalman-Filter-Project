@@ -79,7 +79,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	UKF();
+	UKF(bool use_laser, bool use_radar);
 
 	/**
 	 * Destructor
