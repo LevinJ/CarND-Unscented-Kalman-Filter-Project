@@ -19,8 +19,8 @@ class PlotData(object):
         self.previous_timestamp = None   
         
         entries = []
-        cols = ['type_meas', 'px_meas','py_meas','timestampe','delta_time','px_gt','py_gt','vx_gt','vy_gt',
-                'rho_meas','phi_meas','rho_dot_meas', 'rho_gt','phi_gt','rho_dot_gt','vel_abs','yaw_angle','vx_meas','vy_meas']
+        cols = ['type_meas', 'px_meas','py_meas','vx_meas','vy_meas','timestampe','delta_time','px_gt','py_gt','vx_gt','vy_gt',
+                'rho_meas','phi_meas','rho_dot_meas', 'rho_gt','phi_gt','rho_dot_gt','vel_abs','yaw_angle']
         with open(kalman_input_file, "r") as ins:
             for line in ins:
                 entries.append(self.__process_line(line))
@@ -39,7 +39,7 @@ class PlotData(object):
 #                                                  np.var(radar_df['rho_dot_meas'] - radar_df['rho_dot_gt'])))
 
         df = self.__add_first_derivative(df)
-#         df = self.__add_second_derivative(df)
+        df = self.__add_second_derivative(df)
 #         print("motion noise {}, {}".format(np.max(df['vel_acc'])/2.0, np.max(df['yaw_acc'])/2.0))
         
         return df
@@ -77,7 +77,9 @@ class PlotData(object):
             vel_acc_vec.append(vel_acc)
             #yaw rate
             if df.iloc[i-1]['yaw_angle'] != 0:
-                yaw_rate = (df.iloc[i]['yaw_angle'] - df.iloc[i-1]['yaw_angle'])/delta_time
+                angle_diff = (df.iloc[i]['yaw_angle'] - df.iloc[i-1]['yaw_angle'])
+                angle_diff = self.get_normalziaed_angle(angle_diff)
+                yaw_rate = angle_diff/delta_time
             else:
                 yaw_rate = 0
             yaw_rate_vec.append(yaw_rate)
@@ -85,6 +87,12 @@ class PlotData(object):
         df['yaw_rate'] = yaw_rate_vec
         
         return df
+    def get_normalziaed_angle(self, angle):
+        while(angle> math.pi):
+            angle -=  2*math.pi
+        while(angle < -math.pi):
+            angle +=  2*math.pi
+        return angle
     def __cal_rmse(self, df):
         px_rmse = math.sqrt(((df['px_meas'] - df['px_gt']).values ** 2).mean())
         py_rmse = math.sqrt(((df['py_meas'] - df['py_gt']).values ** 2).mean())
@@ -179,8 +187,8 @@ class PlotData(object):
         yaw_angle = math.atan2(vy_gt, vx_gt)
         
         
-        return type_meas, px_meas,py_meas,timestampe,delta_time, px_gt,py_gt,vx_gt,vy_gt,\
-            rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,vel_abs,  yaw_angle,vx_meas,vy_meas
+        return type_meas, px_meas,py_meas,vx_meas,vy_meas,timestampe,delta_time, px_gt,py_gt,vx_gt,vy_gt,\
+            rho_meas,phi_meas,rho_dot_meas, rho_gt,phi_gt,rho_dot_gt,vel_abs,  yaw_angle
         
     
    
