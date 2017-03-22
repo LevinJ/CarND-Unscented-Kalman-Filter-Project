@@ -530,3 +530,14 @@ void UKF::UpdateRadarState(const MeasurementPackage &meas_package, const MatrixX
   NIS_radar_ = ComputeNIS(z_pred, S, z);
 
 }
+//
+//void UKF::NormalizeAngle(double &angle) {
+//
+//	if (angle> M_PI) {
+//		angle = remainder(angle, (2.*M_PI)) - M_PI;
+//	}
+//	if (angle<-M_PI) {
+//		angle = remainder(angle, (2.*M_PI)) + M_PI;
+//	}
+//
+//}
