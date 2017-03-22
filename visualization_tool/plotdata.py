@@ -38,7 +38,7 @@ class PlotData(object):
 #         print("radar measurement noise {}, {}, {}".format(np.var(radar_df['rho_meas'] - radar_df['rho_gt']), np.var(radar_df['phi_meas'] - radar_df['phi_gt']),
 #                                                  np.var(radar_df['rho_dot_meas'] - radar_df['rho_dot_gt'])))
 
-#         df = self.__add_first_derivative(df)
+        df = self.__add_first_derivative(df)
 #         df = self.__add_second_derivative(df)
 #         print("motion noise {}, {}".format(np.max(df['vel_acc'])/2.0, np.max(df['yaw_acc'])/2.0))
         
@@ -72,9 +72,14 @@ class PlotData(object):
                 vel_acc_vec.append(vel_acc_vec[-1])
                 yaw_rate_vec.append(yaw_rate_vec[-1])
                 continue
+            #vel acceleration
             vel_acc = (df.iloc[i]['vel_abs'] - df.iloc[i-1]['vel_abs'] )/delta_time
             vel_acc_vec.append(vel_acc)
-            yaw_rate = (df.iloc[i]['yaw_angle'] - df.iloc[i-1]['yaw_angle'])/delta_time
+            #yaw rate
+            if df.iloc[i-1]['yaw_angle'] != 0:
+                yaw_rate = (df.iloc[i]['yaw_angle'] - df.iloc[i-1]['yaw_angle'])/delta_time
+            else:
+                yaw_rate = 0
             yaw_rate_vec.append(yaw_rate)
         df['vel_acc'] = vel_acc_vec
         df['yaw_rate'] = yaw_rate_vec
@@ -192,9 +197,10 @@ class PlotData(object):
         kalman_input_file = r'../data/sample-laser-radar-measurement-data-1.txt'
         df = self.__load_input_data(kalman_input_file)
         df = self.__cal_input_rmse(df)
-        self.disp_input(df)
+        
         df.to_csv(self.csv_file_name)
         print(self.csv_file_name + ' saved')
+        self.disp_input(df)
         return df
     def run_data_2(self):
         print('####data sample 2###')
