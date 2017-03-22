@@ -34,13 +34,16 @@ class PlotData(object):
         print('radar only: {}'.format(self.__cal_rmse(radar_df)))
         print('all data: {}'.format(self.__cal_rmse(df)))
         
-#         print("lidar measurement noise {}, {}".format(np.var(lidar_df['px_meas'] - lidar_df['px_gt']), np.var(lidar_df['py_meas'] - lidar_df['py_gt'])))
-#         print("radar measurement noise {}, {}, {}".format(np.var(radar_df['rho_meas'] - radar_df['rho_gt']), np.var(radar_df['phi_meas'] - radar_df['phi_gt']),
-#                                                  np.var(radar_df['rho_dot_meas'] - radar_df['rho_dot_gt'])))
+
 
         df = self.__add_first_derivative(df)
         df = self.__add_second_derivative(df)
-#         print("motion noise {}, {}".format(np.max(df['vel_acc'])/2.0, np.max(df['yaw_acc'])/2.0))
+        
+        #         print("lidar measurement noise {}, {}".format(np.var(lidar_df['px_meas'] - lidar_df['px_gt']), np.var(lidar_df['py_meas'] - lidar_df['py_gt'])))
+#         print("radar measurement noise {}, {}, {}".format(np.var(radar_df['rho_meas'] - radar_df['rho_gt']), np.var(radar_df['phi_meas'] - radar_df['phi_gt']),
+#                                                  np.var(radar_df['rho_dot_meas'] - radar_df['rho_dot_gt'])))
+        print("motion noise {}, {}".format(np.std(df['vel_acc']), np.std(df['yaw_acc'])))
+        print("velocity mean {}, yaw rate mean{}".format(np.mean(df['vel_abs']), np.mean(np.absolute(df['yaw_angle']))))
         
         return df
     def __add_second_derivative(self, df):
