@@ -19,7 +19,7 @@ UKF::UKF(bool use_laser, bool use_radar) {
 	P_ = MatrixXd(5, 5);
 
 	// Process noise standard deviation longitudinal acceleration in m/s^2
-	std_a_ = 2;
+	std_a_ = 0.3;
 
 	// Process noise standard deviation yaw acceleration in rad/s^2
 	std_yawdd_ = 0.5;
@@ -92,15 +92,15 @@ bool UKF::FindFirstMeasurement(const MeasurementPackage &measurement_pack) {
 		if(vx !=0){
 			yaw_angle = vy/vx;
 		}
-
+		yaw_rate = 0;
 		//state covariance matrix P initialization
 		//have relatively high and yet reasonable confidence in yaw_rate, and yaw_acc
 		//to avoid divergence issue
-		P_ << 1, 0, 0, 0,0,
-				0, 1, 0, 0,0,
-				0, 0, 2, 0,0,
-				0, 0, 0, 3,0,
-				0, 0, 0, 0,1;
+		P_ << 2, 0, 0, 0,0,
+				0, 4, 0, 0,0,
+				0, 0, 1, 0,0,
+				0, 0, 0, 0.5,0,
+				0, 0, 0, 0,0.5;
 
 	}
 	else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
