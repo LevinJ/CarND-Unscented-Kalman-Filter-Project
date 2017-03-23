@@ -45,6 +45,10 @@ class PlotData(object):
         print("motion noise {}, {}".format(np.std(df['vel_acc']), np.std(df['yaw_acc'])))
         print("velocity mean {}, yaw rate mean{}".format(np.mean(df['vel_abs']), np.mean(np.absolute(df['yaw_angle']))))
         
+        subdf = df[['yaw_diff', 'yaw_rate', 'yaw_acc','vel_abs', 'vel_acc' ]]
+        print('ground truth statistics')
+        print(subdf.describe())
+        
         return df
     def __add_second_derivative(self, df):
         yaw_acc_vec = []
@@ -65,29 +69,37 @@ class PlotData(object):
     def __add_first_derivative(self, df):
         vel_acc_vec = []
         yaw_rate_vec = []
+        yaw_diff_vec = []
         for i in range(df.shape[0]):
             if i == 0:
                 vel_acc_vec.append(0)
+                yaw_diff_vec.append(0)
                 yaw_rate_vec.append(0)
+                
                 continue
             delta_time = df.iloc[i]['delta_time']
             if  delta_time== 0:
                 vel_acc_vec.append(vel_acc_vec[-1])
+                yaw_diff_vec.append(yaw_diff_vec[-1])
                 yaw_rate_vec.append(yaw_rate_vec[-1])
+                
                 continue
             #vel acceleration
             vel_acc = (df.iloc[i]['vel_abs'] - df.iloc[i-1]['vel_abs'] )/delta_time
             vel_acc_vec.append(vel_acc)
             #yaw rate
-            if df.iloc[i-1]['yaw_angle'] != 0:
-                angle_diff = (df.iloc[i]['yaw_angle'] - df.iloc[i-1]['yaw_angle'])
-                angle_diff = self.get_normalziaed_angle(angle_diff)
-                yaw_rate = angle_diff/delta_time
-            else:
-                yaw_rate = 0
-            yaw_rate_vec.append(yaw_rate)
-        df['vel_acc'] = vel_acc_vec
+            yaw_diff = 0
+            if (df.iloc[i-1]['yaw_angle'] != 0) and ((df.iloc[i]['yaw_angle'] != 0)):
+                yaw_diff = (df.iloc[i]['yaw_angle'] - df.iloc[i-1]['yaw_angle'])
+                yaw_diff = self.get_normalziaed_angle(yaw_diff)
+                
+            
+            yaw_diff_vec.append(yaw_diff)
+            yaw_rate_vec.append(yaw_diff/delta_time)
+        df['yaw_diff'] = yaw_diff_vec
         df['yaw_rate'] = yaw_rate_vec
+        df['vel_acc'] = vel_acc_vec
+        
         
         return df
     def get_normalziaed_angle(self, angle):
@@ -213,18 +225,23 @@ class PlotData(object):
         print(self.csv_file_name + ' saved')
         self.disp_input(df)
         return df
+    
     def run_data_2(self):
         print('####data sample 2###')
         kalman_input_file = r'../data/sample-laser-radar-measurement-data-2.txt'
         df = self.__load_input_data(kalman_input_file)
-        self.__cal_input_rmse(df)
+        df = self.__cal_input_rmse(df)
+        
+        df.to_csv(self.csv_file_name)
+        print(self.csv_file_name + ' saved')
+        self.disp_input(df)
         return df
     
    
         
     def run(self):
-        self.run_data_1()
-#         self.run_data_2()
+#         self.run_data_1()
+        self.run_data_2()
     
 
         return
