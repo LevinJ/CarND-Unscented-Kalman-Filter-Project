@@ -19,10 +19,10 @@ UKF::UKF(bool use_laser, bool use_radar) {
 	P_ = MatrixXd(5, 5);
 
 	// Process noise standard deviation longitudinal acceleration in m/s^2
-	std_a_ = 1.4;
+	std_a_ = 2;
 
 	// Process noise standard deviation yaw acceleration in rad/s^2
-	std_yawdd_ = 0.8;
+	std_yawdd_ = 0.5;
 
 	// Laser measurement noise standard deviation position1 in m
 	std_laspx_ = 0.15;
@@ -34,10 +34,10 @@ UKF::UKF(bool use_laser, bool use_radar) {
 	std_radr_ = 0.3;
 
 	// Radar measurement noise standard deviation angle in rad
-	std_radphi_ = 0.0175;
+	std_radphi_ = 0.03;
 
 	// Radar measurement noise standard deviation radius change in m/s
-	std_radrd_ = 0.1;
+	std_radrd_ = 0.3;
 
 	/**
   TODO:
@@ -72,9 +72,9 @@ bool UKF::FindFirstMeasurement(const MeasurementPackage &measurement_pack) {
 
 	float px = 0;
 	float py = 0;
-	float vel_abs = 0;
-	float yaw_angle = 0;
-	float yaw_rate = 0;
+	float vel_abs = 0.1;
+	float yaw_angle = 0.1;
+	float yaw_rate = 0.1;
 
 	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
 		/**
@@ -89,13 +89,18 @@ bool UKF::FindFirstMeasurement(const MeasurementPackage &measurement_pack) {
 		float vx = ro_dot * cos(phi);
 		float vy = ro_dot * sin(phi);
 		vel_abs = sqrt(vx*vx + vy*vy);
-		yaw_angle = vy/vx;
+		if(vx !=0){
+			yaw_angle = vy/vx;
+		}
+
 		//state covariance matrix P initialization
+		//have relatively high and yet reasonable confidence in yaw_rate, and yaw_acc
+		//to avoid divergence issue
 		P_ << 1, 0, 0, 0,0,
 				0, 1, 0, 0,0,
-				0, 0, 100, 0,0,
-				0, 0, 0, 100,0,
-				0, 0, 0, 0,1000;
+				0, 0, 2, 0,0,
+				0, 0, 0, 3,0,
+				0, 0, 0, 0,1;
 
 	}
 	else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
@@ -107,17 +112,17 @@ bool UKF::FindFirstMeasurement(const MeasurementPackage &measurement_pack) {
 		//state covariance matrix P initialization
 		P_ << 1, 0, 0, 0,0,
 				0, 1, 0, 0,0,
-				0, 0, 1000, 0,0,
-				0, 0, 0, 1000,0,
-				0,0,0,0,1000;
+				0, 0, 2, 0,0,
+				0, 0, 0, 3,0,
+				0, 0, 0, 0,1;
 	}
 	previous_timestamp_ = measurement_pack.timestamp_;
 
 	x_ << px, py, vel_abs, yaw_angle,yaw_rate;
 
 	// done initializing, no need to predict or update
-	if(px == 0){
-		//will start true kalman state initialization till records whose px is not zero arrives
+	if(px == 0 && py==0){
+		//will start true kalman state initialization till records whose px/py is not zero arrives
 		return false;
 	}else{
 		return true;
@@ -163,7 +168,7 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 
 	}
 	NormalizeAngle(x_(3));
-	NormalizeAngle(x_(4));
+//	NormalizeAngle(x_(4));
 	std::cout << "After update x_ = " << std::endl << x_ << std::endl;
 	std::cout << "After update P_ = " << std::endl << P_ << std::endl;
 }
@@ -324,7 +329,7 @@ void UKF::SigmaPointPrediction(MatrixXd &Xsig_pred, double delta_t, const Matrix
 		yaw_p = yaw_p + 0.5*nu_yawdd*delta_t*delta_t;
 		yawd_p = yawd_p + nu_yawdd*delta_t;
 		NormalizeAngle(yaw_p);
-		NormalizeAngle(yawd_p);
+//		NormalizeAngle(yawd_p);
 
 
 		//write predicted sigma point into right column
@@ -382,7 +387,7 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred) {
 	x_ = x;
 	P_ = P;
 	NormalizeAngle(x_(3));
-	NormalizeAngle(x_(4));
+//	NormalizeAngle(x_(4));
 
 }
 
