@@ -132,13 +132,13 @@ int main(int argc, char* argv[]) {
 	// Create a UKF instance
 	bool use_laser = false;
 	bool use_radar = false;
-
+	std::cout << "Tip: Add L, R, or LR at the end of the command line to specify what data to be used as measurement input" << std::endl;
 	if (argc == 4){
 		string data_option = argv[3];
 
-		cout << "data option" << data_option << endl;
 		std::size_t found = data_option.find("L");
 		if (found!=std::string::npos){
+
 			use_laser = true;
 		}
 		found = data_option.find("R");
@@ -148,6 +148,13 @@ int main(int argc, char* argv[]) {
 	}else{
 		use_laser = true;
 		use_radar = true;
+	}
+	if(use_laser && use_radar){
+		std::cout << "use lidar and radar data" << std::endl;
+	}else if(use_laser){
+		std::cout << "use lidar data only" << std::endl;
+	}else{
+		std::cout << "use radar data only" << std::endl;
 	}
 
 	UKF ukf(use_laser, use_radar);
@@ -160,7 +167,7 @@ int main(int argc, char* argv[]) {
 	// start filtering from the second frame (the speed is unknown in the first
 	// frame)
 	for (size_t k = 0; k < number_of_measurements; ++k) {
-		cout << "#######NO " << k+1 <<" #######" <<endl;
+//		cout << "#######NO " << k+1 <<" #######" <<endl;
 
 		//check if we are use this measurement
 		if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {

@@ -158,19 +158,16 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 	Prediction(Xsig_pred, delta_t);
 
 	//perform update step
+
 	if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-		std::cout << "radar update" << std::endl;
 		UpdateRadar(measurement_pack, Xsig_pred);
-
 	}else{
-		std::cout << "lidar update" << std::endl;
 		UpdateLidar(measurement_pack);
-
 	}
 	NormalizeAngle(x_(3));
 //	NormalizeAngle(x_(4));
-	std::cout << "After update x_ = " << std::endl << x_ << std::endl;
-	std::cout << "After update P_ = " << std::endl << P_ << std::endl;
+//	std::cout << "After update x_ = " << std::endl << x_ << std::endl;
+//	std::cout << "After update P_ = " << std::endl << P_ << std::endl;
 }
 
 /**
@@ -182,16 +179,16 @@ void UKF::Prediction(MatrixXd &Xsig_pred, double delta_t) {
 	//create sigma point matrix
 	MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
 	AugmentedSigmaPoints(Xsig_aug);
-	std::cout << "Xsig_aug = " << std::endl << Xsig_aug << std::endl;
+//	std::cout << "Xsig_aug = " << std::endl << Xsig_aug << std::endl;
 
 	//create matrix with predicted sigma points as columns
 	SigmaPointPrediction(Xsig_pred, delta_t, Xsig_aug);
-	std::cout << "Xsig_pred = " << std::endl << Xsig_pred << std::endl;
+//	std::cout << "Xsig_pred = " << std::endl << Xsig_pred << std::endl;
 
 	//compute x_ and P_ for the prediction step
 	PredictMeanAndCovariance(Xsig_pred);
-	std::cout << "x_ = " << std::endl << x_ << std::endl;
-	std::cout << "P_ = " << std::endl << P_ << std::endl;
+//	std::cout << "x_ = " << std::endl << x_ << std::endl;
+//	std::cout << "P_ = " << std::endl << P_ << std::endl;
 
 }
 
