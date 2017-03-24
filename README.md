@@ -34,12 +34,12 @@ Note that the elements in RMSE vector corresponds to [px, py, vx, vy]
 
 ![nis lidar](https://github.com/LevinJ/CarND-Unscented-Kalman-Filter-Project/blob/master/nis_lidar.png)
 
-We use normalized innovation squared to evaluate if the process noise (nu_a, nu_yawdd) is appropriate for the estimation problem in this problem. In general,if we have too many larege nis values throughout the estimation process, it means that underestimation the noise in system, and would want to increase it. On the other side, if we have many small values throughout the estimation process, it means that overestimation the noise in system, and would want to increase it. From this chart, we can see for lidar data, the process noise chosen is appropriate.  
+We use normalized innovation squared to evaluate if the process noise (nu_a, nu_yawdd) is appropriate for the estimation problem in this project. In general,if we have too many larege nis values throughout the estimation process, it means that underestimate the noise in system, and would want to increase the noise. On the other side, if we have many small values throughout the estimation process, it means that overestimation the noise in system, and would want to decrease the noise. From this chart, we can see for lidar data, the process noise chosen is appropriate.  
 
 2. nis_radar
-![nis_radar]https://github.com/LevinJ/CarND-Unscented-Kalman-Filter-Project/blob/master/nis_radar.png)
+![nis_radar](https://github.com/LevinJ/CarND-Unscented-Kalman-Filter-Project/blob/master/nis_radar.png)
 
-from this chart, there are some room for improvement here. The nis values a bit too large, which means we could further fine tune the system by increase process noise or initial covariance matrix.  
+From this chart, we can see that there are some room for improvement here. The nis values a bit too large, which means we could further fine tune the system by increase process noise or initial covariance matrix.  
 
 3. position estimation  
 
