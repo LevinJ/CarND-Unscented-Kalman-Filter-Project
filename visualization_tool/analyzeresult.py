@@ -29,25 +29,26 @@ class AnalyzeResult(object):
         
         
         # Two subplots, unpack the axes array immediately
-        f, (ax1, ax2) = plt.subplots(2, 1, sharey=True)
+        f, ax1 = plt.subplots(1, 1)
         
-        sub_df = df[df['type'] =='L']
-        low_thres = 0.103
-        high_thres = 5.991
-        if sub_df.shape[0] !=0 :
-            ax1.plot(sub_df.index.values, sub_df['nis'])
-            ax1.plot([sub_df.index.values[0], sub_df.index.values[-1]], np.full(2, low_thres))
-            ax1.plot([sub_df.index.values[0], sub_df.index.values[-1]], np.full(2, high_thres))
-            ax1.set_title('lidar nis')
+        if df['type'][0] == 'L':
+            low_thres = 0.103
+            high_thres = 5.991
+            title = 'lidar nis'
+        else:
+            low_thres = 0.352
+            high_thres = 7.815 
+            title = 'radar nis'
         
-        low_thres = 0.352
-        high_thres = 7.815
-        sub_df = df[df['type'] =='R']
-        if sub_df.shape[0] !=0 :
-            ax2.plot(sub_df.index.values, sub_df['nis'])
-            ax2.plot([sub_df.index.values[0], sub_df.index.values[-1]], np.full(2, low_thres))
-            ax2.plot([sub_df.index.values[0], sub_df.index.values[-1]], np.full(2, high_thres))
-            ax2.set_title('radar nis')
+        sub_df = df
+       
+
+        ax1.plot(sub_df.index.values, sub_df['nis'])
+        ax1.plot([sub_df.index.values[0], sub_df.index.values[-1]], np.full(2, low_thres))
+        ax1.plot([sub_df.index.values[0], sub_df.index.values[-1]], np.full(2, high_thres))
+        ax1.set_title(title)
+        
+      
         plt.show()
         return
     
