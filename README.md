@@ -19,7 +19,7 @@ Accuracy - RMSE:
 0.644505  
 0.584015  
 
-2. sample data II
+2. sample data II  
 Accuracy - RMSE:  
 0.15118  
 0.189515  
