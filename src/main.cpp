@@ -206,8 +206,8 @@ int main(int argc, char* argv[]) {
 		double vx = cos(yaw_angle)*v;
 		double vy = sin(yaw_angle)*v;
 
-		out_file_ << ukf.x_(3) << "\t"; // yaw_angle -est
-		out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
+		out_file_ << vx << "\t"; // velocity x direction -est
+		out_file_ << vy << "\t"; // velocity y direction -est
 
 		// output the measurements
 		if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {

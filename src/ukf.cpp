@@ -155,7 +155,17 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 	//perform prediction step
 	//create matrix with predicted sigma points as columns
 	MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
+	while (delta_t > 0.1){
+		//Here we try to descrease the delta time between prediction steps
+		//if delta time is too large (1 second in the case of dataset 2 is too large),
+		//we will end up with large yaw angle gap for prediction step, violating
+		//the kinectics models assumption used in prediction step that yaw angel gap between t and t + delat_t should be small.
+		//consequently this will result in divergence issue.
+		Prediction(Xsig_pred, 0.05);
+		delta_t -= 0.05;
+	}
 	Prediction(Xsig_pred, delta_t);
+//	Prediction(Xsig_pred, delta_t);
 
 	//perform update step
 
