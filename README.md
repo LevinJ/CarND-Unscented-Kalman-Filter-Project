@@ -12,8 +12,8 @@ The goals / steps of this project are the following:
 
 ### Final Result
 
-1. sample data I
-Accuracy - RMSE: 
+1. sample data I  
+Accuracy - RMSE:   
 0.0824666  
 0.0878453  
 0.644505  
