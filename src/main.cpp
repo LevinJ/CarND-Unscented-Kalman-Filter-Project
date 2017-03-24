@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
 	// Create a UKF instance
 	bool use_laser = false;
 	bool use_radar = false;
-	std::cout << "Tip: Add L, R, or LR at the end of the command line to specify what data to be used as measurement input" << std::endl;
+	std::cout << "Tip: Besides input and output file, you can also add L, R, or LR at the end of the command line to specify what data to be used as measurement input" << std::endl;
 	if (argc == 4){
 		string data_option = argv[3];
 
@@ -148,6 +148,10 @@ int main(int argc, char* argv[]) {
 	}else{
 		use_laser = true;
 		use_radar = true;
+	}
+	if(!use_laser && !use_radar) {
+		std::cout << "Please specify at least one data source" << std::endl;
+		return 0;
 	}
 	if(use_laser && use_radar){
 		std::cout << "use lidar and radar data" << std::endl;

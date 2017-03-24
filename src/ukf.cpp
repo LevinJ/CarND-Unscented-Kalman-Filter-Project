@@ -39,13 +39,6 @@ UKF::UKF(bool use_laser, bool use_radar) {
 	// Radar measurement noise standard deviation radius change in m/s
 	std_radrd_ = 0.3;
 
-	/**
-  TODO:
-
-  Complete the initialization. See ukf.h for other member properties.
-
-  Hint: one or more values initialized above might be wildly off...
-	 */
 	is_initialized_= false;
 	n_x_ = 5;
 	//set augmented dimension
@@ -110,6 +103,8 @@ bool UKF::FindFirstMeasurement(const MeasurementPackage &measurement_pack) {
 		px = measurement_pack.raw_measurements_[0];
 		py = measurement_pack.raw_measurements_[1];
 		//state covariance matrix P initialization
+		//have relatively high and yet reasonable confidence in yaw_rate, and yaw_acc
+		//to avoid divergence issue
 		P_ << 1, 0, 0, 0,0,
 				0, 1, 0, 0,0,
 				0, 0, 2, 0,0,
@@ -135,12 +130,7 @@ bool UKF::FindFirstMeasurement(const MeasurementPackage &measurement_pack) {
  * either radar or laser.
  */
 void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
-	/**
-  TODO:
 
-  Complete this function! Make sure you switch between lidar and radar
-  measurements.
-	 */
 	if(!is_initialized_){
 
 		if(FindFirstMeasurement(measurement_pack)){
@@ -158,14 +148,13 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 	while (delta_t > 0.1){
 		//Here we try to descrease the delta time between prediction steps
 		//if delta time is too large (1 second in the case of dataset 2 is too large),
-		//we will end up with large yaw angle gap for prediction step, violating
-		//the kinectics models assumption used in prediction step that yaw angel gap between t and t + delat_t should be small.
-		//consequently this will result in divergence issue.
+		//we will end up with large yaw angle gap for the prediction step, violating
+		//the kinectics model assumption used in prediction step that yaw angel gap between t and t + delat_t should be small.
+		//consequently this will result in divergence issue in the filter.
 		Prediction(Xsig_pred, 0.05);
 		delta_t -= 0.05;
 	}
 	Prediction(Xsig_pred, delta_t);
-//	Prediction(Xsig_pred, delta_t);
 
 	//perform update step
 
@@ -175,7 +164,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 		UpdateLidar(measurement_pack);
 	}
 	NormalizeAngle(x_(3));
-//	NormalizeAngle(x_(4));
 //	std::cout << "After update x_ = " << std::endl << x_ << std::endl;
 //	std::cout << "After update P_ = " << std::endl << P_ << std::endl;
 }
@@ -245,14 +233,6 @@ void UKF::UpdateLidar(const MeasurementPackage &meas_package) {
  * @param {MeasurementPackage} meas_package
  */
 void UKF::UpdateRadar(const MeasurementPackage &meas_package, const MatrixXd &Xsig_pred) {
-	/**
-  TODO:
-
-  Complete this function! Use radar data to update the belief about the object's
-  position. Modify the state vector, x_, and covariance, P_.
-
-  You'll also need to calculate the radar NIS.
-	 */
 
 	VectorXd z_pred = VectorXd(n_z_);
 	MatrixXd S = MatrixXd(n_z_,n_z_);
@@ -336,8 +316,6 @@ void UKF::SigmaPointPrediction(MatrixXd &Xsig_pred, double delta_t, const Matrix
 		yaw_p = yaw_p + 0.5*nu_yawdd*delta_t*delta_t;
 		yawd_p = yawd_p + nu_yawdd*delta_t;
 		NormalizeAngle(yaw_p);
-//		NormalizeAngle(yawd_p);
-
 
 		//write predicted sigma point into right column
 		Xsig_pred(0,i) = px_p;
@@ -394,8 +372,6 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred) {
 	x_ = x;
 	P_ = P;
 	NormalizeAngle(x_(3));
-//	NormalizeAngle(x_(4));
-
 }
 
 void UKF::NormalizeAngle(double &angle) {
@@ -542,14 +518,3 @@ void UKF::UpdateRadarState(const MeasurementPackage &meas_package, const MatrixX
   NIS_radar_ = ComputeNIS(z_pred, S, z);
 
 }
-//
-//void UKF::NormalizeAngle(double &angle) {
-//
-//	if (angle> M_PI) {
-//		angle = remainder(angle, (2.*M_PI)) - M_PI;
-//	}
-//	if (angle<-M_PI) {
-//		angle = remainder(angle, (2.*M_PI)) + M_PI;
-//	}
-//
-//}
