@@ -315,7 +315,7 @@ void UKF::SigmaPointPrediction(MatrixXd &Xsig_pred, double delta_t, const Matrix
 
 		yaw_p = yaw_p + 0.5*nu_yawdd*delta_t*delta_t;
 		yawd_p = yawd_p + nu_yawdd*delta_t;
-		NormalizeAngle(yaw_p);
+//		NormalizeAngle(yaw_p);
 
 		//write predicted sigma point into right column
 		Xsig_pred(0,i) = px_p;
